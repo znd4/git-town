@@ -73,7 +73,7 @@ func executeUndo(verbose configdomain.Verbose) error {
 	if err != nil {
 		return err
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(data.initialBranchesSnapshot.Branches), print.Logger{})
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func determineUndoData(repo execute.OpenRepoResult, verbose configdomain.Verbose
 	if err != nil {
 		return data, false, err
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(branchesSnapshot.Branches), print.Logger{})
 	if err != nil {
 		return data, false, err
 	}

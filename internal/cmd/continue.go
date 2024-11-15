@@ -149,7 +149,7 @@ func determineContinueData(repo execute.OpenRepoResult, verbose configdomain.Ver
 	if err != nil {
 		return data, false, err
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(branchesSnapshot.Branches), print.Logger{})
 	return continueData{
 		branchesSnapshot: branchesSnapshot,
 		config:           validatedConfig,

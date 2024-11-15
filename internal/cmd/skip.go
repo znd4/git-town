@@ -90,7 +90,7 @@ func executeSkip(verbose configdomain.Verbose) error {
 	if err != nil {
 		return err
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(branchesSnapshot.Branches), print.Logger{})
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,10 @@ func NewRemotes(remotes ...string) Remotes {
 }
 
 func (self Remotes) FirstUsableRemote(branchInfos BranchInfos) Option[Remote] {
-
+	remote := branchInfos.GetRemote()
+	if remote.IsSome() {
+		return remote
+	}
 	if self.HasOrigin() {
 		return Some(RemoteOrigin)
 	}

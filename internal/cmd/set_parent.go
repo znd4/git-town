@@ -165,7 +165,7 @@ func determineSetParentData(repo execute.OpenRepoResult, verbose configdomain.Ve
 	if err != nil {
 		return data, false, err
 	}
-	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
+	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(branchesSnapshot.Branches), print.Logger{})
 	if err != nil {
 		return data, false, err
 	}

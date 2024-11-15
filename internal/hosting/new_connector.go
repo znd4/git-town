@@ -14,7 +14,11 @@ import (
 )
 
 // NewConnector provides an instance of the code hosting connector to use based on the given gitConfig.
-func NewConnector(config config.UnvalidatedConfig, remote gitdomain.Remote, log print.Logger) (Option[hostingdomain.Connector], error) {
+func NewConnector(config config.UnvalidatedConfig, remoteOpt Option[gitdomain.Remote], log print.Logger) (Option[hostingdomain.Connector], error) {
+	remote, hasRemote := remoteOpt.Get()
+	if !hasRemote {
+		return None[hostingdomain.Connector](), nil
+	}
 	remoteURL, hasRemoteURL := config.NormalConfig.RemoteURL(remote).Get()
 	hostingPlatform := config.NormalConfig.HostingPlatform
 	platform, hasPlatform := Detect(remoteURL, hostingPlatform).Get()

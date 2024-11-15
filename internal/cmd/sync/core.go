@@ -262,7 +262,7 @@ func determineSyncData(syncAllBranches configdomain.AllBranches, syncStack confi
 	if !hasInitialBranch {
 		return data, false, errors.New(messages.CurrentBranchCannotDetermine)
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	if err != nil {
 		return data, false, err
 	}

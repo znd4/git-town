@@ -164,7 +164,11 @@ func determineDeleteData(args []string, repo execute.OpenRepoResult, dryRun conf
 	if branchToDelete.SyncStatus == gitdomain.SyncStatusOtherWorktree {
 		return data, exit, fmt.Errorf(messages.BranchOtherWorktree, branchNameToDelete)
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	remotes, err := repo.Git.Remotes(repo.Backend)
+	if err != nil {
+		return data, false, err
+	}
+	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	if err != nil {
 		return data, false, err
 	}
@@ -175,7 +179,7 @@ func determineDeleteData(args []string, repo execute.OpenRepoResult, dryRun conf
 		BranchesAndTypes:   branchesAndTypes,
 		BranchesSnapshot:   branchesSnapshot,
 		BranchesToValidate: gitdomain.LocalBranchNames{},
-		Connector:          connector,
+		Connector:          connectorOpt,
 		DialogTestInputs:   dialogTestInputs,
 		Frontend:           repo.Frontend,
 		Git:                repo.Git,
@@ -200,10 +204,6 @@ func determineDeleteData(args []string, repo execute.OpenRepoResult, dryRun conf
 		mainBranch:         validatedConfig.ValidatedConfigData.MainBranch,
 		previousBranch:     previousBranchOpt,
 	})
-	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
-	if err != nil {
-		return data, false, err
-	}
 	proposalsOfChildBranches := ship.LoadProposalsOfChildBranches(ship.LoadProposalsOfChildBranchesArgs{
 		ConnectorOpt:               connectorOpt,
 		Lineage:                    validatedConfig.NormalConfig.Lineage,

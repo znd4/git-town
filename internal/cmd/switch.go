@@ -153,7 +153,11 @@ func determineSwitchData(args []string, repo execute.OpenRepoResult, verbose con
 	if !hasInitialBranch {
 		return data, exit, errors.New(messages.CurrentBranchCannotDetermine)
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	remotes, err := repo.Git.Remotes(repo.Backend)
+	if err != nil {
+		return data, false, err
+	}
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	if err != nil {
 		return data, false, err
 	}

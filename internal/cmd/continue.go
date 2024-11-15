@@ -145,7 +145,11 @@ func determineContinueData(repo execute.OpenRepoResult, verbose configdomain.Ver
 			return data, false, errors.New(messages.CurrentBranchCannotDetermine)
 		}
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	remotes, err := repo.Git.Remotes(repo.Backend)
+	if err != nil {
+		return data, false, err
+	}
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	return continueData{
 		branchesSnapshot: branchesSnapshot,
 		config:           validatedConfig,

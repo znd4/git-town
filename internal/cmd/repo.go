@@ -64,15 +64,11 @@ func executeRepo(args []string, verbose configdomain.Verbose) error {
 }
 
 func determineRepoData(args []string, repo execute.OpenRepoResult) (data repoData, err error) {
-	var remoteOpt Option[gitdomain.Remote]
+	var remote Option[gitdomain.Remote]
 	if len(args) > 0 {
-		remoteOpt = Some(gitdomain.NewRemote(args[0]))
+		remote = Some(gitdomain.NewRemote(args[0]))
 	} else {
-		remoteOpt = Some(gitdomain.RemoteOrigin)
-	}
-	remote, hasRemote := remoteOpt.Get()
-	if !hasRemote {
-		return repoData{connector: nil}, nil
+		remote = Some(gitdomain.RemoteOrigin)
 	}
 	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, remote, print.Logger{})
 	if err != nil {

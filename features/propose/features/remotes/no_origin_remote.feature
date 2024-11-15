@@ -2,17 +2,18 @@
 Feature: no "origin" remote
 
   Background:
-    Given a Git repo with origin
+    Given a local Git repo
     And the branches
-      | NAME    | TYPE    | PARENT | LOCATIONS     |
-      | feature | feature | main   | local, origin |
+      | NAME    | TYPE    | PARENT | LOCATIONS |
+      | feature | feature | main   | local     |
     And tool "open" is installed
     And the current branch is "feature"
-    And the origin is "git@github.com:git-town/git-town.git"
-    And a proposal for this branch exists at "https://github.com/git-town/git-town/pull/123"
-
-  Scenario: a PR for this branch exists already
+    And an additional "upstream" remote with URL "git@github.com:git-town/git-town.git"
     When I run "git-town propose"
+
+  @debug
+  @this
+  Scenario: result
     Then Git Town runs the commands
       | BRANCH  | COMMAND                                            |
       | feature | git fetch --prune --tags                           |

@@ -173,7 +173,11 @@ func determineMergeData(repo execute.OpenRepoResult, verbose configdomain.Verbos
 		return mergeData{}, false, errors.New(messages.CurrentBranchCannotDetermine)
 	}
 	branchesAndTypes := repo.UnvalidatedConfig.UnvalidatedBranchesAndTypes(branchesSnapshot.Branches.LocalBranches().Names())
-	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	remotes, err := repo.Git.Remotes(repo.Backend)
+	if err != nil {
+		return mergeData{}, false, err
+	}
+	connectorOpt, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	if err != nil {
 		return mergeData{}, false, err
 	}
@@ -204,10 +208,6 @@ func determineMergeData(repo execute.OpenRepoResult, verbose configdomain.Verbos
 		return mergeData{}, false, fmt.Errorf(messages.MergeNoGrandParent, initialBranch, parentBranch)
 	}
 	previousBranch := repo.Git.PreviouslyCheckedOutBranch(repo.Backend)
-	remotes, err := repo.Git.Remotes(repo.Backend)
-	if err != nil {
-		return mergeData{}, false, err
-	}
 	initialBranchInfo, hasInitialBranchInfo := branchesSnapshot.Branches.FindByLocalName(initialBranch).Get()
 	if !hasInitialBranchInfo {
 		return mergeData{}, false, fmt.Errorf(messages.BranchInfoNotFound, initialBranch)

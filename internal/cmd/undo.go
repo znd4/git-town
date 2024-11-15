@@ -69,7 +69,11 @@ func executeUndo(verbose configdomain.Verbose) error {
 		fmt.Println(messages.UndoNothingToDo)
 		return nil
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	remotes, err := repo.Git.Remotes(repo.Backend)
+	if err != nil {
+		return err
+	}
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	if err != nil {
 		return err
 	}
@@ -125,7 +129,11 @@ func determineUndoData(repo execute.OpenRepoResult, verbose configdomain.Verbose
 	if err != nil || exit {
 		return data, false, err
 	}
-	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, gitdomain.RemoteOrigin, print.Logger{})
+	remotes, err := repo.Git.Remotes(repo.Backend)
+	if err != nil {
+		return data, false, err
+	}
+	connector, err := hosting.NewConnector(repo.UnvalidatedConfig, remotes.FirstUsableRemote(), print.Logger{})
 	if err != nil {
 		return data, false, err
 	}

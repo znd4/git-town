@@ -751,6 +751,14 @@ func defineSteps(sc *godog.ScenarioContext) {
 		devRepo.Config.Reload()
 	})
 
+	sc.Step(`^I rename remote "([^"]*)" to "([^"]*)"$`, func(ctx context.Context, oldRemoteName, newRemoteName string) {
+		state := ctx.Value(keyScenarioState).(*ScenarioState)
+		devRepo := state.fixture.DevRepo.GetOrPanic()
+		oldRemote := gitdomain.NewRemote(oldRemoteName)
+		newRemote := gitdomain.NewRemote(newRemoteName)
+		devRepo.RenameRemote(oldRemote, newRemote)
+	})
+
 	sc.Step(`^I resolve the conflict in "([^"]*)" in the other worktree$`, func(ctx context.Context, filename string) {
 		state := ctx.Value(keyScenarioState).(*ScenarioState)
 		content := "resolved content"

@@ -2,12 +2,14 @@
 Feature: no "origin" remote
 
   Background:
-    Given a local Git repo
+    Given a Git repo with origin
     And the branches
       | NAME    | TYPE    | PARENT | LOCATIONS |
       | feature | feature | main   | local     |
     And tool "open" is installed
     And the current branch is "feature"
+    And I rename remote "origin" to "fork"
+    And Git Town setting "default-remote" is "fork"
     And an additional "upstream" remote with URL "git@github.com:git-town/git-town.git"
     When I run "git-town propose"
 
@@ -18,7 +20,7 @@ Feature: no "origin" remote
       | BRANCH  | COMMAND                                            |
       | feature | git fetch --prune --tags                           |
       |         | git merge --no-edit --ff main                      |
-      |         | git push -u origin feature                         |
+      |         | git push -u fork feature                           |
       | <none>  | Looking for proposal online ... ok                 |
       |         | open https://github.com/git-town/git-town/pull/123 |
     And the current branch is still "feature"

@@ -17,6 +17,8 @@ Feature: no "origin" remote
     Then Git Town runs the commands
       | BRANCH  | COMMAND                                            |
       | feature | git fetch --prune --tags                           |
+      |         | git merge --no-edit --ff main                      |
+      |         | git push -u origin feature                         |
       | <none>  | Looking for proposal online ... ok                 |
       |         | open https://github.com/git-town/git-town/pull/123 |
     And the current branch is still "feature"

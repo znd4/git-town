@@ -17,14 +17,6 @@ func NewRemotes(remotes ...string) Remotes {
 	return result
 }
 
-func (self Remotes) HasOrigin() bool {
-	return slices.Contains(self, RemoteOrigin)
-}
-
-func (self Remotes) HasUpstream() bool {
-	return slices.Contains(self, RemoteUpstream)
-}
-
 func (self Remotes) FirstUsableRemote() Option[Remote] {
 	if self.HasOrigin() {
 		return Some(RemoteOrigin)
@@ -36,4 +28,12 @@ func (self Remotes) FirstUsableRemote() Option[Remote] {
 		return Some(self[0])
 	}
 	return None[Remote]()
+}
+
+func (self Remotes) HasOrigin() bool {
+	return slices.Contains(self, RemoteOrigin)
+}
+
+func (self Remotes) HasUpstream() bool {
+	return slices.Contains(self, RemoteUpstream)
 }

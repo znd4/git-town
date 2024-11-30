@@ -6,6 +6,7 @@ import (
 	"github.com/git-town/git-town/v16/internal/config/configdomain"
 	"github.com/git-town/git-town/v16/internal/git/gitdomain"
 	"github.com/git-town/git-town/v16/internal/hosting/bitbucketcloud"
+	"github.com/git-town/git-town/v16/internal/hosting/bitbucketdatacenter"
 	"github.com/git-town/git-town/v16/internal/hosting/gitea"
 	"github.com/git-town/git-town/v16/internal/hosting/github"
 	"github.com/git-town/git-town/v16/internal/hosting/gitlab"
@@ -29,6 +30,15 @@ func NewConnector(config config.UnvalidatedConfig, remoteOpt Option[gitdomain.Re
 	switch platform {
 	case configdomain.HostingPlatformBitbucket:
 		connector = bitbucketcloud.NewConnector(bitbucketcloud.NewConnectorArgs{
+			AppPassword:     config.NormalConfig.BitbucketAppPassword,
+			HostingPlatform: hostingPlatform,
+			Log:             log,
+			RemoteURL:       remoteURL,
+			UserName:        config.NormalConfig.BitbucketUsername,
+		})
+		return Some(connector), nil
+	case configdomain.HostingPlatformBitbucketDatacenter:
+		connector = bitbucketdatacenter.NewConnector(bitbucketdatacenter.NewConnectorArgs{
 			AppPassword:     config.NormalConfig.BitbucketAppPassword,
 			HostingPlatform: hostingPlatform,
 			Log:             log,

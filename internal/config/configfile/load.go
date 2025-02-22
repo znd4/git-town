@@ -168,6 +168,7 @@ func Validate(data Data) (configdomain.PartialConfig, error) {
 		DefaultBranchType:        defaultBranchType,
 		FeatureRegex:             featureRegex,
 		GitHubToken:              None[configdomain.GitHubToken](),
+		GitHubTokenScript:        None[configdomain.GitHubTokenScript](),
 		GitLabToken:              None[configdomain.GitLabToken](),
 		GitUserEmail:             None[configdomain.GitUserEmail](),
 		GitUserName:              None[configdomain.GitUserName](),

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/git-town/git-town/v16/internal/cli/colors"
@@ -201,7 +202,24 @@ func GetAPIToken(gitConfigToken Option[configdomain.GitHubToken]) Option[configd
 // NewConnector provides a fully configured GithubConnector instance
 // if the current repo is hosted on GitHub, otherwise nil.
 func NewConnector(args NewConnectorArgs) (Connector, error) {
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: args.APIToken.String()})
+	token := func() Option[configdomain.GitHubToken] {
+		t := GetAPIToken(args.APIToken)
+		if t.IsSome() {
+			return t
+		}
+		if script, some := args.APITokenScript.Get(); some {
+			// TODO: use mvdan/sh to run the script
+			cmd := exec.Command("sh", "-c", script.String())
+			output, err := cmd.Output()
+			if err != nil {
+				args.Log.Failed(fmt.Sprintf("Failed to run GitHub token script: %s", err.Error()))
+				return t
+			}
+			return configdomain.ParseGitHubToken(string(output))
+		}
+		return t
+	}()
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token.String()})
 	httpClient := oauth2.NewClient(context.Background(), tokenSource)
 	githubClient := github.NewClient(httpClient)
 	if args.RemoteURL.Host != "github.com" {
@@ -225,9 +243,10 @@ func NewConnector(args NewConnectorArgs) (Connector, error) {
 }
 
 type NewConnectorArgs struct {
-	APIToken  Option[configdomain.GitHubToken]
-	Log       print.Logger
-	RemoteURL giturl.Parts
+	APIToken       Option[configdomain.GitHubToken]
+	APITokenScript Option[configdomain.GitHubTokenScript]
+	Log            print.Logger
+	RemoteURL      giturl.Parts
 }
 
 // parsePullRequest extracts standardized proposal data from the given GitHub pull-request.

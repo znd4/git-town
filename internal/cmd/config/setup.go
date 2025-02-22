@@ -1,11 +1,14 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"slices"
 
 	"github.com/git-town/git-town/v16/internal/cli/dialog"
 	"github.com/git-town/git-town/v16/internal/cli/dialog/components"
+	"github.com/git-town/git-town/v16/internal/cli/dialog/components/list"
 	"github.com/git-town/git-town/v16/internal/cli/flags"
 	"github.com/git-town/git-town/v16/internal/cmd/cmdhelpers"
 	"github.com/git-town/git-town/v16/internal/config"
@@ -111,6 +114,106 @@ func determineHostingPlatform(config config.UnvalidatedConfig, userChoice Option
 	return None[configdomain.HostingPlatform]()
 }
 
+type promptInterface interface {
+	Prompt(data *setupData) (aborted bool, err error)
+}
+
+type prompt[T any] struct {
+	from   *T
+	old    T
+	prompt func(T, components.TestInput) (T, bool, error)
+}
+
+func (u prompt[T]) Prompt(data *setupData) (aborted bool, err error) {
+	new, aborted, err := u.prompt(u.old, data.dialogInputs.Next())
+	if err != nil || aborted {
+		return aborted, err
+	}
+	*(u.from) = new
+	return
+}
+
+func credentialPrompt(data *setupData, config config.UnvalidatedConfig, credentialMethod dialog.CredentialMethodOption, platform configdomain.HostingPlatform) (prompts []promptInterface) {
+	switch platform {
+	case configdomain.HostingPlatformBitbucket, configdomain.HostingPlatformBitbucketDatacenter:
+		if credentialMethod == dialog.CredentialMethodScript {
+			prompts = append(prompts, prompt[Option[configdomain.BitbucketUsernameScript]]{
+				from:   &data.userInput.config.NormalConfig.BitbucketUsernameScript,
+				old:    config.NormalConfig.BitbucketUsernameScript,
+				prompt: dialog.BitbucketUsernameScript,
+			})
+			prompts = append(prompts, prompt[Option[configdomain.BitbucketAppPasswordScript]]{
+				from:   &data.userInput.config.NormalConfig.BitbucketAppPasswordScript,
+				old:    config.NormalConfig.BitbucketAppPasswordScript,
+				prompt: dialog.BitbucketAppPasswordScript,
+			})
+			return
+		}
+		prompts = append(prompts, prompt[Option[configdomain.BitbucketUsername]]{
+			from:   &data.userInput.config.NormalConfig.BitbucketUsername,
+			old:    config.NormalConfig.BitbucketUsername,
+			prompt: dialog.BitbucketUsername,
+		})
+		prompts = append(prompts, prompt[Option[configdomain.BitbucketAppPassword]]{
+			from:   &data.userInput.config.NormalConfig.BitbucketAppPassword,
+			old:    config.NormalConfig.BitbucketAppPassword,
+			prompt: dialog.BitbucketAppPassword,
+		})
+		return
+	case configdomain.HostingPlatformGitea:
+		if credentialMethod == dialog.CredentialMethodScript {
+			prompts = append(prompts, prompt[Option[configdomain.GiteaTokenScript]]{
+				from:   &data.userInput.config.NormalConfig.GiteaTokenScript,
+				old:    config.NormalConfig.GiteaTokenScript,
+				prompt: dialog.GiteaTokenScript,
+			})
+			return
+		}
+		prompts = append(prompts, prompt[Option[configdomain.GiteaToken]]{
+			from:   &data.userInput.config.NormalConfig.GiteaToken,
+			old:    config.NormalConfig.GiteaToken,
+			prompt: dialog.GiteaToken,
+		})
+		return
+	case configdomain.HostingPlatformGitHub:
+		if credentialMethod == dialog.CredentialMethodScript {
+			prompts = append(prompts, prompt[Option[configdomain.GitHubTokenScript]]{
+				from:   &data.userInput.config.NormalConfig.GitHubTokenScript,
+				old:    config.NormalConfig.GitHubTokenScript,
+				prompt: dialog.GitHubTokenScript,
+			})
+			return
+		}
+		prompts = append(prompts, prompt[Option[configdomain.GitHubToken]]{
+			from:   &data.userInput.config.NormalConfig.GitHubToken,
+			old:    config.NormalConfig.GitHubToken,
+			prompt: dialog.GitHubToken,
+		})
+	case configdomain.HostingPlatformGitLab:
+		if credentialMethod == dialog.CredentialMethodScript {
+			prompts = append(prompts, prompt[Option[configdomain.GitLabTokenScript]]{
+				from:   &data.userInput.config.NormalConfig.GitLabTokenScript,
+				old:    config.NormalConfig.GitLabTokenScript,
+				prompt: dialog.GitLabTokenScript,
+			})
+			return
+		}
+		prompts = append(prompts, prompt[Option[configdomain.GitLabToken]]{
+			from:   &data.userInput.config.NormalConfig.GitLabToken,
+			old:    config.NormalConfig.GitLabToken,
+			prompt: dialog.GitLabToken,
+		})
+	}
+	return
+}
+
+func priorCredentialMethod(config config.UnvalidatedConfig, platform configdomain.HostingPlatform) Option[dialog.CredentialMethodOption] {
+	if config.NormalConfig.GitHubTokenScript.IsSome() {
+		return Some[dialog.CredentialMethodOption](dialog.CredentialMethodScript)
+	}
+	return None[dialog.CredentialMethodOption]()
+}
+
 func enterData(config config.UnvalidatedConfig, gitCommands git.Commands, backend gitdomain.RunnerQuerier, data *setupData) (aborted bool, err error) {
 	aborted, err = dialog.Welcome(data.dialogInputs.Next())
 	if err != nil || aborted {
@@ -153,6 +256,17 @@ func enterData(config config.UnvalidatedConfig, gitCommands git.Commands, backen
 		return aborted, err
 	}
 	if platform, has := determineHostingPlatform(config, data.userInput.config.NormalConfig.HostingPlatform).Get(); has {
+		credentialMethod, aborted, err := dialog.CredentialMethod(
+			priorCredentialMethod(config, platform),
+			data.dialogInputs.Next(),
+		)
+		updates := credentialPrompt(credentialMethod, platform)
+		for _, update := range updates {
+			if update.err || update.aborted {
+				return aborted, err
+			}
+			*(update.from) = update.to
+		}
 		switch platform {
 		case configdomain.HostingPlatformBitbucket, configdomain.HostingPlatformBitbucketDatacenter:
 			data.userInput.config.NormalConfig.BitbucketUsername, aborted, err = dialog.BitbucketUsername(config.NormalConfig.BitbucketUsername, data.dialogInputs.Next())
@@ -280,6 +394,10 @@ func saveAll(userInput userInput, oldConfig config.UnvalidatedConfig, gitCommand
 	if err != nil {
 		return err
 	}
+	err = saveGitHubTokenScript(oldConfig.NormalConfig.GitHubTokenScript, userInput.config.NormalConfig.GitHubTokenScript, gitCommands, frontend)
+	if err != nil {
+		return err
+	}
 	err = saveGitLabToken(oldConfig.NormalConfig.GitLabToken, userInput.config.NormalConfig.GitLabToken, gitCommands, frontend)
 	if err != nil {
 		return err
@@ -384,6 +502,16 @@ func saveGiteaToken(oldToken, newToken Option[configdomain.GiteaToken], gitComma
 		return gitCommands.SetGiteaToken(frontend, value)
 	}
 	return gitCommands.RemoveGiteaToken(frontend)
+}
+
+func saveGitHubTokenScript(oldScript, newScript Option[configdomain.GitHubTokenScript], gitCommands git.Commands, frontend gitdomain.Runner) error {
+	if newScript == oldScript {
+		return nil
+	}
+	if value, has := newScript.Get(); has {
+		return gitCommands.SetGitHubTokenScript(frontend, value)
+	}
+	return gitCommands.RemoveGitHubTokenScript(frontend)
 }
 
 func saveGitHubToken(oldToken, newToken Option[configdomain.GitHubToken], gitCommands git.Commands, frontend gitdomain.Runner) error {

@@ -75,6 +75,8 @@ const (
 	KeyFeatureRegex                        = Key("git-town.feature-regex")
 	KeyGiteaToken                          = Key("git-town.gitea-token")
 	KeyGithubToken                         = Key(pkg.KeyGithubToken)
+	KeyGithubTokenScript                   = Key("git-town.github-token-script")
+	KeyCredentialScriptsGithubToken        = Key("git-town.credential-scripts.github-token")
 	KeyGitlabToken                         = Key("git-town.gitlab-token")
 	KeyHostingOriginHostname               = Key("git-town.hosting-origin-hostname")
 	KeyHostingPlatform                     = Key("git-town.hosting-platform")
@@ -125,6 +127,7 @@ var keys = []Key{ //nolint:gochecknoglobals
 	KeyFeatureRegex,
 	KeyGiteaToken,
 	KeyGithubToken,
+	KeyGithubTokenScript,
 	KeyGitlabToken,
 	KeyGitUserEmail,
 	KeyGitUserName,

@@ -52,9 +52,10 @@ func NewConnector(config config.UnvalidatedConfig, remote gitdomain.Remote, log 
 	case configdomain.HostingPlatformGitHub:
 		var err error
 		connector, err = github.NewConnector(github.NewConnectorArgs{
-			APIToken:  github.GetAPIToken(config.NormalConfig.GitHubToken),
-			Log:       log,
-			RemoteURL: remoteURL,
+			APIToken:       config.NormalConfig.GitHubToken,
+			APITokenScript: config.NormalConfig.GitHubTokenScript,
+			Log:            log,
+			RemoteURL:      remoteURL,
 		})
 		return Some(connector), err
 	case configdomain.HostingPlatformGitLab:

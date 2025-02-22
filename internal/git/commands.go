@@ -587,6 +587,11 @@ func (self *Commands) RemoveGitHubToken(runner gitdomain.Runner) error {
 	return runner.Run("git", "config", "--unset", configdomain.KeyGithubToken.String())
 }
 
+// RemoveGitHubTokenScript removes the script to retrieve the GitHub token.
+func (self *Commands) RemoveGitHubTokenScript(runner gitdomain.Runner) error {
+	return runner.Run("git", "config", "--unset", configdomain.KeyGithubToken.String())
+}
+
 // RemoveHubToken removes the stored token for the GitHub API.
 func (self *Commands) RemoveGitLabToken(runner gitdomain.Runner) error {
 	return runner.Run("git", "config", "--unset", configdomain.KeyGitlabToken.String())
@@ -680,6 +685,11 @@ func (self *Commands) SetGitAlias(runner gitdomain.Runner, aliasableCommand conf
 // SetGitHubToken sets the given API token for the GitHub API.
 func (self *Commands) SetGitHubToken(runner gitdomain.Runner, value configdomain.GitHubToken) error {
 	return runner.Run("git", "config", configdomain.KeyGithubToken.String(), value.String())
+}
+
+// SetGitHubTokenScript sets the script to retrieve the GitHub token.
+func (self *Commands) SetGitHubTokenScript(runner gitdomain.Runner, value configdomain.GitHubTokenScript) error {
+	return runner.Run("git", "config", configdomain.KeyGithubTokenScript.String(), value.String())
 }
 
 // SetGitLabToken sets the given API token for the GitHub API.

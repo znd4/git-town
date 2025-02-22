@@ -18,6 +18,7 @@ type NormalConfigData struct {
 	DefaultBranchType        BranchType
 	FeatureRegex             Option[FeatureRegex]
 	GitHubToken              Option[GitHubToken]
+	GitHubTokenScript        Option[GitHubTokenScript]
 	GitLabToken              Option[GitLabToken]
 	GiteaToken               Option[GiteaToken]
 	HostingOriginHostname    Option[HostingOriginHostname]
@@ -139,6 +140,7 @@ func DefaultNormalConfig() NormalConfigData {
 		DefaultBranchType:        BranchTypeFeatureBranch,
 		FeatureRegex:             None[FeatureRegex](),
 		GitHubToken:              None[GitHubToken](),
+		GitHubTokenScript:        None[GitHubTokenScript](),
 		GitLabToken:              None[GitLabToken](),
 		GiteaToken:               None[GiteaToken](),
 		HostingOriginHostname:    None[HostingOriginHostname](),

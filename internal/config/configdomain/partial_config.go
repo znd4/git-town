@@ -18,6 +18,7 @@ type PartialConfig struct {
 	DefaultBranchType        Option[BranchType]
 	FeatureRegex             Option[FeatureRegex]
 	GitHubToken              Option[GitHubToken]
+	GitHubTokenScript        Option[GitHubTokenScript]
 	GitLabToken              Option[GitLabToken]
 	GitUserEmail             Option[GitUserEmail]
 	GitUserName              Option[GitUserName]
@@ -99,6 +100,7 @@ func NewPartialConfigFromSnapshot(snapshot SingleSnapshot, updateOutdated bool, 
 		DefaultBranchType:        defaultBranchType,
 		FeatureRegex:             featureRegex,
 		GitHubToken:              ParseGitHubToken(snapshot[KeyGithubToken]),
+		GitHubTokenScript:        ParseGitHubTokenScript(snapshot[KeyGithubTokenScript]),
 		GitLabToken:              ParseGitLabToken(snapshot[KeyGitlabToken]),
 		GitUserEmail:             ParseGitUserEmail(snapshot[KeyGitUserEmail]),
 		GitUserName:              ParseGitUserName(snapshot[KeyGitUserName]),
@@ -141,6 +143,7 @@ func (self PartialConfig) Merge(other PartialConfig) PartialConfig {
 		DefaultBranchType:        other.DefaultBranchType.Or(self.DefaultBranchType),
 		FeatureRegex:             other.FeatureRegex.Or(self.FeatureRegex),
 		GitHubToken:              other.GitHubToken.Or(self.GitHubToken),
+		GitHubTokenScript:        other.GitHubTokenScript.Or(self.GitHubTokenScript),
 		GitLabToken:              other.GitLabToken.Or(self.GitLabToken),
 		GitUserEmail:             other.GitUserEmail.Or(self.GitUserEmail),
 		GitUserName:              other.GitUserName.Or(self.GitUserName),
@@ -180,6 +183,7 @@ func (self PartialConfig) ToNormalConfig(defaults NormalConfigData) NormalConfig
 		DefaultBranchType:        self.DefaultBranchType.GetOrElse(BranchTypeFeatureBranch),
 		FeatureRegex:             self.FeatureRegex,
 		GitHubToken:              self.GitHubToken,
+		GitHubTokenScript:        self.GitHubTokenScript,
 		GitLabToken:              self.GitLabToken,
 		GiteaToken:               self.GiteaToken,
 		HostingOriginHostname:    self.HostingOriginHostname,

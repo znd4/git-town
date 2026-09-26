@@ -45,7 +45,7 @@ in
   };
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.package ];
-    programs.git.aliases = lib.attrsets.genAttrs (
+    programs.git.settings.alias = lib.attrsets.genAttrs (
       if cfg.enableAllAliases then aliasableCommands else cfg.aliases
     ) (alias: "town " + alias);
     assertions = [
